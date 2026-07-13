@@ -70,6 +70,77 @@ public sealed class Report(IDatabase db)
     public int RowCount() => db.Query("SELECT * FROM sales").Count;
 }
 
+// ---------- OOP Coupling — Subtyping & Message (DIP) ----------
+
+/// FIXED — the abstraction collaborators depend on. "Program to an interface,
+/// not an implementation"; depend on abstractions, not concretions (DIP).
+public interface IMailer
+{
+    void Send(string receipt);
+}
+
+/// A tiny order that knows how to describe its own receipt.
+public record MailOrder(string Id)
+{
+    public string Receipt() => $"Receipt for order {Id}";
+}
+
+/// FIXED — message coupling, the loosest bond: Orders talks to IMailer only
+/// through messages and shares no state. The mailer is injected, so any mailer
+/// swaps in with no change here (DIP).
+public sealed class Orders(IMailer mailer)
+{
+    // Only a message crosses the boundary — nothing else is shared.
+    public void Place(MailOrder order) => mailer.Send(order.Receipt());
+}
+
+/// SMELL — "program to an implementation": creates its own concrete mailer with
+/// new, welding itself to it. No seam to swap it or to intercept the mail.
+public sealed class OrdersSmell
+{
+    private readonly SmtpMailer _mailer = new();
+    public void Place(MailOrder order) => _mailer.Send(order.Receipt());
+
+    private sealed class SmtpMailer
+    {
+        public void Send(string receipt) { /* pretend a real socket opens */ }
+    }
+}
+
+/// FIXED — an IMailer test double; the seam that message coupling buys us.
+public sealed class RecordingMailer : IMailer
+{
+    private readonly List<string> _sent = new();
+    public void Send(string receipt) => _sent.Add(receipt);
+    public IReadOnlyList<string> Sent => _sent;
+}
+
+/// A simple base ledger; its Entries list is an internal implementation detail.
+public class Ledger
+{
+    protected readonly List<int> Entries = new();
+    public void Add(int amount) => Entries.Add(amount);
+    public int Total() => Entries.Sum();
+}
+
+/// SMELL — subtyping coupling: reaches into the parent's protected Entries,
+/// binding to Ledger's internal shape. Change the storage and this breaks.
+public sealed class AuditLedgerSmell : Ledger
+{
+    public int AuditTotal()
+    {
+        var sum = 0;
+        foreach (var amount in Entries) sum += amount;   // welded to parent data
+        return sum;
+    }
+}
+
+/// FIXED — composition over inheritance: holds a Ledger and uses only its public API.
+public sealed class AuditLedger(Ledger ledger)
+{
+    public int AuditTotal() => ledger.Total();   // depends only on the public surface
+}
+
 // ---------- Law of Demeter ----------
 
 public record Address(string Street, string City);

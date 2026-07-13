@@ -24,6 +24,31 @@ public class FundamentalsTests
     }
 
     [Fact]
+    public void MessageCouplingLetsUsInjectAndVerifyAnyMailer()
+    {
+        var mailer = new RecordingMailer();
+        new Orders(mailer).Place(new MailOrder("o1"));
+        Assert.Single(mailer.Sent);
+        Assert.Equal("Receipt for order o1", mailer.Sent[0]);
+        // Programming to an implementation leaves no seam — it just runs.
+        Assert.Null(Record.Exception(() => new OrdersSmell().Place(new MailOrder("o2"))));
+    }
+
+    [Fact]
+    public void SubtypingSmellAndComposedFixAgree()
+    {
+        var smell = new AuditLedgerSmell();
+        smell.Add(10);
+        smell.Add(32);
+        Assert.Equal(42, smell.AuditTotal());
+
+        var ledger = new Ledger();
+        ledger.Add(10);
+        ledger.Add(32);
+        Assert.Equal(42, new AuditLedger(ledger).AuditTotal());
+    }
+
+    [Fact]
     public void DemeterBothReturnTheSameCity()
     {
         var order = new DemeterOrder("o1",

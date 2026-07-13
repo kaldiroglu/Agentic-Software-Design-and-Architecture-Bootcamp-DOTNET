@@ -27,7 +27,7 @@ C# (records, primary constructors, pattern matching), each proven by a test.
 | File | Lecture |
 |------|---------|
 | `Intro.cs` | 01 — order total: tangled → decision-separated |
-| `Fundamentals.cs` | 02 — cohesion, coupling, Law of Demeter |
+| `Fundamentals.cs` | 02 — cohesion, coupling (Structured + OOP · DIP), Law of Demeter |
 | `CleanCode.cs` | 03 — honest errors, guard clauses |
 | `Solid.cs` | 04 — SRP · OCP · LSP · ISP · DIP |
 | `Patterns.cs` | 05 — Factory · Strategy · Proxy |
@@ -35,6 +35,19 @@ C# (records, primary constructors, pattern matching), each proven by a test.
 | `Testing.cs` | 07 — AAA + test double |
 | `Project.cs` | 09 — Library Loan service |
 | `Architecture.cs` | 11 & 12 — layered vs hexagonal |
+
+### OOP Coupling & DIP (Deck 02, in `Fundamentals.cs`)
+
+Beside Structured Design's coupling ladder (Content → Data), this shows the two
+**OOP** coupling types from deck 02:
+
+- **Message coupling** — `Orders` depends on the `IMailer` **interface**, injected
+  from outside: *program to an interface, not an implementation*; *depend on
+  abstractions, not concretions* — the **Dependency Inversion Principle**.
+  `OrdersSmell` is the anti-pattern (it `new`s a concrete mailer — no seam), and
+  `RecordingMailer` is the test double that seam buys you.
+- **Subtyping coupling** — `AuditLedgerSmell` reaches into its parent `Ledger`'s
+  protected `Entries`; `AuditLedger` fixes it with composition (public API only).
 
 ## Run it with
 
