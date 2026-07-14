@@ -42,6 +42,10 @@ C# (records, primary constructors, pattern matching), each proven by a test.
 random creation (`Random`), comparison (`Matches`, constant-time), and formatting
 & masking (`Masked`, `MaskedShowingLast`) all live in one class, while storage,
 hashing and UI stay out. One concept, one home — functional cohesion in the small.
+Where does hashing go, then? An `IPasswordHasher` **port** with a `Pbkdf2PasswordHasher`
+adapter and a durable `HashedPassword` record — it changes for different reasons and
+needs infrastructure, so it stays off the domain type (DIP). See the slide-8 presenter
+note "Why isn't hashing a Password here?".
 
 ### OOP Coupling & DIP (Deck 02, in `Fundamentals.cs`)
 

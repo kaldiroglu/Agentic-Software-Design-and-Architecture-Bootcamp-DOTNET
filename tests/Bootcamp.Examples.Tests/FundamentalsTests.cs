@@ -44,6 +44,21 @@ public class FundamentalsTests
     }
 
     [Fact]
+    public void PasswordHasherStoresAndVerifiesWithoutKeepingThePlaintext()
+    {
+        IPasswordHasher hasher = new Pbkdf2PasswordHasher();
+        var stored = hasher.Hash(Password.Of("Sup3r-Secret!!"));
+
+        Assert.True(hasher.Verify(Password.Of("Sup3r-Secret!!"), stored));
+        Assert.False(hasher.Verify(Password.Of("Wr0ng-Secret!!"), stored));
+
+        // salted: the same password hashes differently each time, yet still verifies.
+        var again = hasher.Hash(Password.Of("Sup3r-Secret!!"));
+        Assert.NotEqual(stored.Encoded, again.Encoded);
+        Assert.True(hasher.Verify(Password.Of("Sup3r-Secret!!"), again));
+    }
+
+    [Fact]
     public void MessageCouplingLetsUsInjectAndVerifyAnyMailer()
     {
         var mailer = new RecordingMailer();

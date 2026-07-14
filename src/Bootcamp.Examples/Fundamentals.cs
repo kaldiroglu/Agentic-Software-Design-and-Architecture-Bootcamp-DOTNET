@@ -1,4 +1,6 @@
 // ◀ Slides: Deck 02 Fundamentals — cohesion, coupling, Law of Demeter
+using System.Security.Cryptography;
+
 namespace dev.kaldiroglu.bootcamp.fundamentals;
 
 // Topic 02 — Cohesion, Coupling and the Law of Demeter.
@@ -103,7 +105,53 @@ public sealed class Password
     public override bool Equals(object? other) => other is Password p && Matches(p._value);
     public override int GetHashCode() => _value.GetHashCode();
 
+    // internal: only same-assembly collaborators (e.g. a PasswordHasher) may read the
+    // raw value, and only to hash or verify it. It never leaks to the outside world.
+    internal string Value => _value;
+
     private static char Pick(string pool) => pool[Rng.Next(pool.Length)];
+}
+
+/// The DURABLE form of a password — what actually gets persisted. A distinct value
+/// object from Password because it has a different lifecycle (a Password lives for
+/// milliseconds; this outlives every session). The encoded string carries everything
+/// needed to verify later: algorithm parameters, salt, and the derived key.
+public sealed record HashedPassword(string Encoded);
+
+/// The answer to "why isn't hashing on Password?" — hashing lives HERE, in a port,
+/// not on the value object. It changes for different reasons (algorithm, work factor)
+/// and needs infrastructure, so it stays out of the pure domain type (DIP).
+public interface IPasswordHasher
+{
+    HashedPassword Hash(Password password);
+    bool Verify(Password candidate, HashedPassword stored);
+}
+
+/// FIXED — the infrastructure adapter that implements IPasswordHasher. All the
+/// volatile, dependency-heavy detail (PBKDF2-HMAC-SHA256, a per-password salt, a
+/// tunable work factor) lives here; swap it for Argon2 and Password never changes.
+public sealed class Pbkdf2PasswordHasher : IPasswordHasher
+{
+    private const int Iterations = 210_000;   // tune upward as hardware improves
+    private const int KeyBytes = 32;
+    private const int SaltBytes = 16;
+
+    public HashedPassword Hash(Password password)
+    {
+        var salt = RandomNumberGenerator.GetBytes(SaltBytes);
+        var key = Rfc2898DeriveBytes.Pbkdf2(password.Value, salt, Iterations, HashAlgorithmName.SHA256, KeyBytes);
+        return new HashedPassword($"{Iterations}:{Convert.ToBase64String(salt)}:{Convert.ToBase64String(key)}");
+    }
+
+    public bool Verify(Password candidate, HashedPassword stored)
+    {
+        var parts = stored.Encoded.Split(':');
+        var iterations = int.Parse(parts[0]);
+        var salt = Convert.FromBase64String(parts[1]);
+        var expected = Convert.FromBase64String(parts[2]);
+        var actual = Rfc2898DeriveBytes.Pbkdf2(candidate.Value, salt, iterations, HashAlgorithmName.SHA256, expected.Length);
+        return CryptographicOperations.FixedTimeEquals(expected, actual);   // constant-time
+    }
 }
 
 // ---------- Coupling ----------
