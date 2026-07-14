@@ -24,6 +24,28 @@ public class FundamentalsTests
     }
 
     [Fact]
+    public void LeakyExposesItsListWhileSealedHidesIt()
+    {
+        var item = new Item("book");
+
+        // Leaky: callers mutate X through the leaked list — even bypassing X entirely.
+        var lx = new Leaky.X();
+        new Leaky.Y(lx).Add(item);
+        Assert.Equal(1, lx.Count);
+        lx.GetItems().Add(new Item("smuggled"));   // no X method called — invariant bypassed
+        Assert.Equal(2, lx.Count);
+        new Leaky.Z(lx).Remove(item);
+        Assert.Equal(1, lx.Count);
+
+        // Sealed: same collaboration, but the list is never exposed — X stays in control.
+        var sx = new Sealed.X();
+        new Sealed.Y(sx).Add(item);
+        Assert.Equal(1, sx.Count);
+        new Sealed.Z(sx).Remove(item);
+        Assert.Equal(0, sx.Count);
+    }
+
+    [Fact]
     public void PasswordValueObjectKeepsAllItsBehaviourTogether()
     {
         var password = Password.Of("Sup3r-Secret!!");   // 14 chars: upper, lower, digit, symbol

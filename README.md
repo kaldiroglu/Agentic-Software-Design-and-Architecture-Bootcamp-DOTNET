@@ -60,6 +60,14 @@ Beside Structured Design's coupling ladder (Content → Data), this shows the tw
 - **Subtyping coupling** — `AuditLedgerSmell` reaches into its parent `Ledger`'s
   protected `Entries`; `AuditLedger` fixes it with composition (public API only).
 
+### Leaky Abstractions — cohesion meets coupling (Deck 02, in `Fundamentals.cs`)
+
+`Leaky.X` exposes its internal `List<Item>` via `GetItems()`, so `Leaky.Y`/`Leaky.Z`
+reach in and mutate it — low cohesion showing up as coupling (and a Demeter train
+wreck). `Sealed.X` owns the behaviour (`AddItem`/`RemoveItem`) and keeps the list
+private: only the interface is exposed. Every abstraction leaks *something* — the skill
+is leaking the interface, never the representation.
+
 ## Run it with
 
 ```bash

@@ -257,6 +257,56 @@ public sealed class AuditLedger(Ledger ledger)
     public int AuditTotal() => ledger.Total();   // depends only on the public surface
 }
 
+// ---------- Leaky Abstractions — cohesion meets coupling ----------
+
+public sealed record Item(string Name);
+
+/// SMELL — X leaks its internal list via GetItems(); Y and Z reach in and mutate it.
+/// Callers are now coupled to X's representation — low cohesion shows up as coupling
+/// (plus a Law-of-Demeter train wreck: x.GetItems().Add(...)).
+public static class Leaky
+{
+    public sealed class X
+    {
+        private readonly List<Item> _items = new();
+        public List<Item> GetItems() => _items;   // leaks the internal list
+        public int Count => _items.Count;
+    }
+
+    public sealed class Y(X x)
+    {
+        public void Add(Item item) => x.GetItems().Add(item);        // reaches into X
+    }
+
+    public sealed class Z(X x)
+    {
+        public void Remove(Item item) => x.GetItems().Remove(item);  // reaches into X
+    }
+}
+
+/// FIXED — X owns the behaviour (AddItem/RemoveItem) and keeps the list private. Only
+/// the interface is exposed; callers depend on X, never on its representation.
+public static class Sealed
+{
+    public sealed class X
+    {
+        private readonly List<Item> _items = new();
+        public bool AddItem(Item item) { _items.Add(item); return true; }
+        public bool RemoveItem(Item item) => _items.Remove(item);
+        public int Count => _items.Count;
+    }
+
+    public sealed class Y(X x)
+    {
+        public void Add(Item item) => x.AddItem(item);         // asks X to act
+    }
+
+    public sealed class Z(X x)
+    {
+        public void Remove(Item item) => x.RemoveItem(item);   // asks X to act
+    }
+}
+
 // ---------- Law of Demeter ----------
 
 public record Address(string Street, string City);
