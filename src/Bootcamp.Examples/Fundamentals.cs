@@ -38,6 +38,74 @@ public sealed class EmailComposer
         $"To: {to}\nSubject: {subject}\n\n{body}";
 }
 
+/// FIXED — a highly cohesive value object: validation, random creation, comparison
+/// and masking for a password all live here, and nothing unrelated leaks in.
+public sealed class Password
+{
+    private const int MinLength = 12;
+    private const string Upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private const string Lower = "abcdefghijklmnopqrstuvwxyz";
+    private const string Digits = "0123456789";
+    private const string Symbols = "!@#$%^&*()-_=+";
+    private static readonly Random Rng = new();   // demo only; use RandomNumberGenerator in production
+    private readonly string _value;
+
+    private Password(string value) => _value = value;
+
+    // create & validate — one place owns the rules
+    public static Password Of(string raw) =>
+        IsValid(raw) ? new Password(raw)
+                     : throw new ArgumentException("Password does not meet the policy");
+
+    public static bool IsValid(string? raw) =>
+        raw is not null
+        && raw.Length >= MinLength
+        && raw.Any(char.IsUpper)
+        && raw.Any(char.IsLower)
+        && raw.Any(char.IsDigit)
+        && raw.Any(ch => !char.IsLetterOrDigit(ch));
+
+    // generate a strong random password (reuses Of()/IsValid)
+    public static Password Random(int length)
+    {
+        if (length < MinLength) throw new ArgumentException($"length must be at least {MinLength}");
+        var chars = new List<char> { Pick(Upper), Pick(Lower), Pick(Digits), Pick(Symbols) };
+        var pool = Upper + Lower + Digits + Symbols;
+        while (chars.Count < length) chars.Add(Pick(pool));
+        for (var i = chars.Count - 1; i > 0; i--)   // shuffle
+        {
+            var j = Rng.Next(i + 1);
+            (chars[i], chars[j]) = (chars[j], chars[i]);
+        }
+        return Of(new string(chars.ToArray()));
+    }
+
+    // compare safely — constant-time, no early exit on first difference
+    public bool Matches(string? candidate)
+    {
+        if (candidate is null || candidate.Length != _value.Length) return false;
+        var diff = 0;
+        for (var i = 0; i < _value.Length; i++) diff |= _value[i] ^ candidate[i];
+        return diff == 0;
+    }
+
+    // format & mask — never leak the raw value
+    public string Masked() => new('•', _value.Length);
+
+    public string MaskedShowingLast(int shown)
+    {
+        if (shown <= 0) return Masked();
+        var hidden = Math.Max(0, _value.Length - shown);
+        return new string('•', hidden) + _value[hidden..];
+    }
+
+    public override string ToString() => Masked();   // safe by default
+    public override bool Equals(object? other) => other is Password p && Matches(p._value);
+    public override int GetHashCode() => _value.GetHashCode();
+
+    private static char Pick(string pool) => pool[Rng.Next(pool.Length)];
+}
+
 // ---------- Coupling ----------
 
 /// FIXED — the abstraction the report depends on.

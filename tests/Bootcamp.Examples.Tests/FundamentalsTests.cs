@@ -24,6 +24,26 @@ public class FundamentalsTests
     }
 
     [Fact]
+    public void PasswordValueObjectKeepsAllItsBehaviourTogether()
+    {
+        var password = Password.Of("Sup3r-Secret!!");   // 14 chars: upper, lower, digit, symbol
+
+        Assert.False(Password.IsValid("password"));
+        Assert.Throws<ArgumentException>(() => Password.Of("short"));
+
+        Assert.True(password.Matches("Sup3r-Secret!!"));
+        Assert.False(password.Matches("Sup3r-Secret!?"));
+
+        Assert.Equal("••••••••••••••", password.Masked());
+        Assert.Equal("••••••••••••!!", password.MaskedShowingLast(2));
+        Assert.Equal(password.Masked(), password.ToString());
+
+        var random = Password.Random(16);
+        Assert.Equal(16, random.Masked().Length);
+        Assert.NotEqual(random, Password.Random(16));
+    }
+
+    [Fact]
     public void MessageCouplingLetsUsInjectAndVerifyAnyMailer()
     {
         var mailer = new RecordingMailer();

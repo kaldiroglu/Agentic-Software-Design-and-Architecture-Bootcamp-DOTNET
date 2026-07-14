@@ -36,6 +36,13 @@ C# (records, primary constructors, pattern matching), each proven by a test.
 | `Project.cs` | 09 — Library Loan service |
 | `Architecture.cs` | 11 & 12 — layered vs hexagonal |
 
+### High Cohesion: a Password value object (Deck 02, in `Fundamentals.cs`)
+
+`Password` is a highly cohesive **value object** — validation (`Of` / `IsValid`),
+random creation (`Random`), comparison (`Matches`, constant-time), and formatting
+& masking (`Masked`, `MaskedShowingLast`) all live in one class, while storage,
+hashing and UI stay out. One concept, one home — functional cohesion in the small.
+
 ### OOP Coupling & DIP (Deck 02, in `Fundamentals.cs`)
 
 Beside Structured Design's coupling ladder (Content → Data), this shows the two
