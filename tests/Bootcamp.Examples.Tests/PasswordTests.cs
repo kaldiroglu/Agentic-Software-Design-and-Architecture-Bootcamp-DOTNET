@@ -39,4 +39,21 @@ public class PasswordTests
         Assert.NotEqual(stored.Encoded, again.Encoded);
         Assert.True(hasher.Verify(Password.Of("Sup3r-Secret!!"), again));
     }
+
+    [Fact]
+    public void FormatterAndFactorySplitPasswordResponsibilities()
+    {
+        var formatter = new PasswordFormatter();
+        var factory = new PasswordFactory();
+
+        var password = Password.Of("Sup3r-Secret!!");   // 14 chars
+        Assert.Equal("[redacted: 14 chars]", formatter.RedactedForLog(password));
+        Assert.Equal("Su••••••••••••", formatter.ShowingFirst(password, 2));
+
+        Assert.Equal(16, factory.Temporary().Masked().Length);
+        Assert.Equal(24, factory.ResetToken().Masked().Length);
+        Assert.NotEqual(factory.Temporary(), factory.Temporary());   // each is unique
+        Assert.True(factory.FromRaw("Sup3r-Secret!!").Matches("Sup3r-Secret!!"));
+        Assert.Throws<ArgumentException>(() => factory.FromRaw("weak"));
+    }
 }

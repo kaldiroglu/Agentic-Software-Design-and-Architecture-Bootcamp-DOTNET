@@ -17,7 +17,7 @@ contract.
 |-------|--------|
 | `IntroTests` | smell and fixed totals agree; discount rule is swappable |
 | `FundamentalsTests` | cohesive classes, injectable DB, Demeter delegation, message coupling & DIP, subtyping vs. composition, leaky vs. sealed abstraction |
-| `PasswordTests` | the `Password` value object (validation, random, comparison, masking) and the `PasswordHasher` port (PBKDF2, salted) |
+| `PasswordTests` | the `Password` value object (validation, random, comparison, masking), the `PasswordHasher` port (PBKDF2, salted), and the `PasswordFormatter`/`PasswordFactory` split |
 | `CleanCodeTests` | honest errors throw vs. null; guard clauses preserve behaviour |
 | `SolidTests` | one test per principle — **LSP passes for Rectangle, fails for Square** |
 | `PatternsTests` | Factory hides types; Strategy matches; Proxy defers the load |
@@ -34,4 +34,4 @@ dotnet test                          # run every suite
 dotnet test --filter ProjectTests    # run one suite
 ```
 
-A green run reports: `Passed! - Failed: 0, Passed: 35, Skipped: 0, Total: 35`.
+A green run reports: `Passed! - Failed: 0, Passed: 36, Skipped: 0, Total: 36`.

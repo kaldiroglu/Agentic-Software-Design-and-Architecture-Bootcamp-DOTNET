@@ -119,3 +119,31 @@ public sealed class Pbkdf2PasswordHasher : IPasswordHasher
         return CryptographicOperations.FixedTimeEquals(expected, actual);   // constant-time
     }
 }
+
+/// FIXED — the presentation task, split out of Password. As display formats multiply
+/// (log redaction, UI hints, ...) they live here instead of bloating the value object.
+public sealed class PasswordFormatter
+{
+    /// Log-safe: reveals only the length, never the value.
+    public string RedactedForLog(Password password) => $"[redacted: {password.Value.Length} chars]";
+
+    /// Show only the first `shown` characters (a UI hint); mask the rest.
+    public string ShowingFirst(Password password, int shown)
+    {
+        var value = password.Value;
+        var visible = Math.Max(0, Math.Min(shown, value.Length));
+        return value[..visible] + new string('•', value.Length - visible);
+    }
+}
+
+/// FIXED — the construction task, split out of Password. Named build strategies
+/// (temporary, reset token, from raw input) live here, each reusing Password's rules.
+public sealed class PasswordFactory
+{
+    private const int TemporaryLength = 16;
+    private const int ResetTokenLength = 24;
+
+    public Password Temporary() => Password.Random(TemporaryLength);
+    public Password ResetToken() => Password.Random(ResetTokenLength);
+    public Password FromRaw(string raw) => Password.Of(raw);
+}
