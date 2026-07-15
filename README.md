@@ -36,7 +36,7 @@ C# (records, primary constructors, pattern matching), each proven by a test.
 | `Project.cs` | 09 — Library Loan service |
 | `Architecture.cs` | 11 & 12 — layered vs hexagonal |
 
-### High Cohesion: a Password value object (Deck 02, in `Fundamentals.cs`)
+### High Cohesion: a Password value object (Deck 02, in `Password.cs` — namespace `dev.kaldiroglu.bootcamp.fundamentals.password`)
 
 `Password` is a highly cohesive **value object** — validation (`Of` / `IsValid`),
 random creation (`Random`), comparison (`Matches`, constant-time), and formatting
