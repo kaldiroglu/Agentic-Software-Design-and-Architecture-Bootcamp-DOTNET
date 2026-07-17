@@ -29,6 +29,17 @@ public class SolidTests
     }
 
     [Fact]
+    public void Ocp_EachRoleIsASubclassNotACaseInASwitch()
+    {
+        Assert.Equal(new Ocp.EmployeePaySmell(Ocp.EmployeePaySmell.ENGINEER, 100).Pay(),
+            new Ocp.Engineer(100).Pay(), 3);
+        Assert.Equal(new Ocp.EmployeePaySmell(Ocp.EmployeePaySmell.SALESMAN, 100).Pay(),
+            new Ocp.Salesman(100).Pay(), 3);
+        Assert.Equal(new Ocp.EmployeePaySmell(Ocp.EmployeePaySmell.MANAGER, 100).Pay(),
+            new Ocp.Manager(100).Pay(), 3);
+    }
+
+    [Fact]
     public void Lsp_SquareBreaksTheRectangleContract()
     {
         var rect = new LspBad.Rectangle();

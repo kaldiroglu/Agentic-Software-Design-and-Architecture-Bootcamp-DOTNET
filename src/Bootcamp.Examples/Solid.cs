@@ -57,6 +57,63 @@ namespace dev.kaldiroglu.bootcamp.solid.ocp
     {
         public double Price(double baseline) => baseline * 1.08;
     }
+
+    // ◀ Slides: Deck 04 SOLID — "The Type-Field Smell"
+
+    /// SMELL — an int 'type' field and a method that branches on it; every new
+    /// role edits this method (and every other switch on type).
+    public sealed class EmployeePaySmell
+    {
+        public const int ENGINEER = 1;
+        public const int SALESMAN = 2;
+        public const int MANAGER = 3;
+
+        private readonly int _type;
+        private readonly double _base;
+
+        public EmployeePaySmell(int type, double baseline)
+        {
+            _type = type;
+            _base = baseline;
+        }
+
+        public double Pay()
+        {
+            if (_type == ENGINEER) return _base;
+            if (_type == SALESMAN) return _base + _base * 0.10;   // + commission
+            if (_type == MANAGER) return _base + _base * 0.20;    // + bonus
+            throw new InvalidOperationException($"Unknown type: {_type}");
+        }
+    }
+
+    /// FIXED — each role is a subclass that owns its pay rule; a new role is a
+    /// new subclass and this code never changes.
+    public abstract class Employee
+    {
+        protected readonly double Base;
+
+        protected Employee(double baseline) => Base = baseline;
+
+        public abstract double Pay();
+    }
+
+    public sealed class Engineer : Employee
+    {
+        public Engineer(double baseline) : base(baseline) { }
+        public override double Pay() => Base;
+    }
+
+    public sealed class Salesman : Employee
+    {
+        public Salesman(double baseline) : base(baseline) { }
+        public override double Pay() => Base + Base * 0.10;   // + commission
+    }
+
+    public sealed class Manager : Employee
+    {
+        public Manager(double baseline) : base(baseline) { }
+        public override double Pay() => Base + Base * 0.20;   // + bonus
+    }
 }
 
 namespace dev.kaldiroglu.bootcamp.solid.lsp.violation
