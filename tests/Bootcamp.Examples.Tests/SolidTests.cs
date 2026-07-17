@@ -37,6 +37,16 @@ public class SolidTests
             new Ocp.Salesman(100).Pay(), 3);
         Assert.Equal(new Ocp.EmployeePaySmell(Ocp.EmployeePaySmell.MANAGER, 100).Pay(),
             new Ocp.Manager(100).Pay(), 3);
+
+        // a brand-new role, added without editing any existing class:
+        Assert.Equal(90.0, new Contractor(100).Pay(), 3);
+    }
+
+    // a new role = a new subclass; no existing pay code changes
+    private sealed class Contractor : Ocp.Employee
+    {
+        public Contractor(double baseline) : base(baseline) { }
+        public override double Pay() => Base * 0.90;   // day-rate, no benefits
     }
 
     [Fact]

@@ -19,7 +19,7 @@ contract.
 | `FundamentalsTests` | cohesive classes, injectable DB, Demeter delegation, message coupling & DIP, subtyping vs. composition, leaky vs. sealed abstraction |
 | `PasswordTests` | the `Password` value object (validation, random, comparison, masking), the `PasswordHasher` port (PBKDF2, salted), and the `PasswordFormatter`/`PasswordFactory` split |
 | `CleanCodeTests` | honest errors throw vs. null; guard clauses preserve behaviour |
-| `SolidTests` | one test per principle, plus OCP's Employee type-field example (subclasses reproduce the `type`-switch numbers) — **LSP passes for Rectangle, fails for Square** |
+| `SolidTests` | one test per principle, plus OCP's Employee type-field example (subclasses reproduce the `type`-switch numbers, and a new `Contractor` extends without edits) — **LSP passes for Rectangle, fails for Square** |
 | `PatternsTests` | Factory hides types; Strategy matches; Proxy defers the load |
 | `SecureTests` | injection vs parameterization; error leaks; secrets from config |
 | `TestingTests` | Arrange-Act-Assert and a spy test double |

@@ -75,7 +75,8 @@ is leaking the interface, never the representation.
 every new role edits tested code. The fix is *replace conditional with polymorphism*:
 an abstract `Employee` with `Engineer`, `Salesman` and `Manager` subclasses, each owning
 its own `Pay()`. `SolidTests` proves the polymorphic version reproduces the smell's
-numbers role for role — open for extension, closed for modification.
+numbers role for role, then adds a brand-new `Contractor` **without editing any
+existing class** — open for extension, closed for modification.
 
 ## Run it with
 
