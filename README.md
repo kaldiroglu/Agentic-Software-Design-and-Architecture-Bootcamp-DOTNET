@@ -68,6 +68,15 @@ wreck). `Sealed.X` owns the behaviour (`AddItem`/`RemoveItem`) and keeps the lis
 private: only the interface is exposed. Every abstraction leaks *something* — the skill
 is leaking the interface, never the representation.
 
+### OCP: the type-field smell (Deck 04, in `Solid.cs` — namespace `dev.kaldiroglu.bootcamp.solid.ocp`)
+
+`EmployeePaySmell` is the classic Open/Closed violation — an `int` type field and a
+`Pay()` method that branches on it (`if (_type == ENGINEER) … SALESMAN … MANAGER`), so
+every new role edits tested code. The fix is *replace conditional with polymorphism*:
+an abstract `Employee` with `Engineer`, `Salesman` and `Manager` subclasses, each owning
+its own `Pay()`. `SolidTests` proves the polymorphic version reproduces the smell's
+numbers role for role — open for extension, closed for modification.
+
 ## Run it with
 
 ```bash
